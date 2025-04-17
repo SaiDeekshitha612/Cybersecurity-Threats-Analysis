@@ -16,33 +16,19 @@ print(df.head())
 dataset_copy = df.copy()
 
 def clean_dataset(df):
-    # 1. Remove duplicate rows
     df.drop_duplicates(inplace=True)
-    df.dropna(inplace=True)
-    # 2. clean 
+    df.dropna(inplace=True) 
     df.columns = df.columns.str.strip().str.lower().str.replace(' ', '_').str.replace(r'[^\w\s]', '', regex=True)
-    # 3. Format text data to look consistent
-    columns_to_clean = [
-        'country',
-        'attack_type',
-        'target_industry',
-        'attack_source',
-        'security_vulnerability_type',
-        'defense_mechanism_used'
-    ]
+    columns_to_clean = ['country','attack_type','target_industry','attack_source','security_vulnerability_type','defense_mechanism_used']
 
     for col in columns_to_clean:
-        df[col] = df[col].str.strip().str.title()  # clean and format text values
-
-    # 4. final info
-    print("Cleaning complete.")
+        df[col] = df[col].str.strip().str.title()
     print(df.info())
     return df
 df = clean_dataset(df)
 print(df.head())
 print("cleaning completed successfully")
 
-# mysql connection
 connection = mysql.connector.connect(
     host='localhost',
     user='root',   
@@ -50,7 +36,7 @@ connection = mysql.connector.connect(
     database='cybersecurity'  
 )
 cursor = connection.cursor()
-print("Connection established!")
+print("Connection established")
 def insert_data_to_mysql(df, cursor, connection):
     # Inserting
     insert_query = """
@@ -59,36 +45,24 @@ def insert_data_to_mysql(df, cursor, connection):
                              defense_mechanism_used, incident_resolution_time_in_hours)
         VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
     """
-
-    # insert each row into database
     for row in df.itertuples(index=False):
         cursor.execute(insert_query, row)
-
-    # Commit the transaction
     connection.commit()
     print(f"{cursor.rowcount} rows inserted into the database!")
-
-# Calling the function to insert data into MySQL
 insert_data_to_mysql(df, cursor, connection)
-
-# Closing the connection
 cursor.close()
 
 def perform_analysis(df):
     from tabulate import tabulate  
-# 1. Top countries affected by cyber attacks
+# Top countries affected by cyber attacks
     top_countries = df['country'].value_counts().head(10)
-
-# 2. Frequency of different types of threats
+# Frequency of different types of threats
     threat_frequency = df['attack_type'].value_counts()
-
-# 3. Year-over-year trends
+# Year over year trends
     yearly_trends = df.groupby('year').size()
-
-# 4. Severity levels and their impact by region 
+# Impact by region 
     impact_by_region = df.groupby('country')['financial_loss_in_million_'].sum().sort_values(ascending=False).head(10)
-
-# 5. Correlation between attack type and sector
+# Correlation between attack type and sector
     attack_sector_correlation = df.groupby(['attack_type', 'target_industry']).size().unstack(fill_value=0)
 
 def print_table(title, data):
@@ -110,6 +84,7 @@ def plot_graphs(df):
     plt.ylabel("Country")
     plt.tight_layout()
     plt.show()
+    
     plt.figure(figsize=(10, 6))
     sns.countplot(data=df, y='attack_type', order=df['attack_type'].value_counts().index, palette='magma')
     plt.title("Frequency of Different Threat Types")
