@@ -4,7 +4,6 @@ import mysql.connector
 import matplotlib.pyplot as plt
 import seaborn as sns
 file_path = 'C:/Users/gudur/Desktop/Projects/Global_Cybersecurity_Threats_2015-2024.csv'
-
 try:
     df = pd.read_csv(file_path)
     print("File loaded successfully")
